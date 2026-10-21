@@ -1,4 +1,5 @@
 import * as crypto from 'node:crypto';
+import { shell } from 'electron';
 
 import { readResourceCache, clearResourceCache } from './resource-cache';
 import { canUseMapResourceCache } from '../../shared/server-address';
@@ -229,15 +230,23 @@ export function createGameWindowManager({
                 nextWindow.setMenuBarVisibility(false);
                 nextWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
                 nextWindow.webContents.on('will-navigate', (event, target) => {
-                    let next;
+                    let next:URL|null;
                     try {
                         next = new URL(target);
                     } catch {
                         event.preventDefault();
                         return;
                     }
+
+                    const serverEndpoint = new URL(server.endpoint);
                     if (next.origin !== origin) {
+                        // Open in browser for safety
+                        shell.openExternal(next.href)
                         event.preventDefault();
+                    }
+                    if(next.pathname.replace(/\/+$/, '') === serverEndpoint.pathname.replace(/\/+$/, '')){
+                        // Close window if game exit
+                        close()
                     }
                 });
                 nextWindow.on('closed', () => {
