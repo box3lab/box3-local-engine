@@ -23,7 +23,7 @@ const project = {
 } as LocalProject;
 const options = {
   projects: [project],
-  refreshProjects: jest.fn(),
+  refreshProjects: jest.fn(async () => {}),
   setNotice: jest.fn(),
   closeProjectMenu: jest.fn(),
   selectProject: jest.fn(),
@@ -38,7 +38,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   states = [];
   stateIndex = 0;
-  jest.mocked(useState).mockImplementation((initial: unknown) => {
+  jest.mocked(useState).mockImplementation((initial: unknown = undefined) => {
     const index = stateIndex++;
     if (!(index in states)) states[index] = initial;
     return [

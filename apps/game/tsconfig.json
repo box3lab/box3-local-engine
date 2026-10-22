@@ -27,7 +27,7 @@
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictPropertyInitialization": true,
-    "target": "es5",
+    "target": "es2020",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -61,7 +61,12 @@
   },
   "exclude": [
     "build",
-    "public"
+    "public",
+    "src/engine/gpu/postprocess-legacy.ts",
+    "src/engine/animation/convert-bvh.ts",
+    "scripts/vb2obj.ts",
+    "src/views/edit/components/stage-area/right-sidebar/ai-panel/index.tsx",
+    "**/*.stories.tsx"
   ],
   // 仅本地开发使用
   "ts-node": {

@@ -1,7 +1,8 @@
 import { vec3, vec2 } from 'gl-matrix';
+import { toVec3 } from '../../../../../engine/utils/vec3';
 
 const nor = vec3.create();
-const O = [0, 0, 0];
+const O = vec3.create();
 export function CylinderGeometry(
   n: vec3,
   radiusTop: number,
@@ -14,7 +15,7 @@ export function CylinderGeometry(
   thetaLength: number,
 ) {
   vec3.normalize(nor, n);
-  const shadow_yz = vec3.clone([0, nor[1], nor[2]]);
+  const shadow_yz = toVec3([0, nor[1], nor[2]]);
   const len_shadow_yz = vec3.len(shadow_yz);
 
   let nbCap = 0;
@@ -52,7 +53,7 @@ export function CylinderGeometry(
     vertices.forEach((v) => {
       // FIXME: should consider major angle while use dot to compute cosTheta and cosPhi
       // acos will renturn [0, π] https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/acos
-      const cosTheta = vec3.dot(shadow_yz, [0, 1, 0]) / len_shadow_yz;
+      const cosTheta = vec3.dot(shadow_yz, toVec3([0, 1, 0])) / len_shadow_yz;
       const cosPhi = vec3.dot(nor, shadow_yz);
       const theta = Math.acos(cosTheta);
       const phi = Math.acos(cosPhi);

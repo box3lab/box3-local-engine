@@ -83,12 +83,12 @@ export async function fetchModelList(query: {
       const item: ModelData = {
         id: model.modelId,
         name: model.modelName,
-        modelPreviewUrl: model.modelPreviewUrl,
-        modelFileHash: model.modelFileHash,
+        modelPreviewUrl: model.modelPreviewUrl || '',
+        modelFileHash: model.modelFileHash || '',
         bounds: [0, 0, 0],
-        animated: model.animated,
+        animated: model.animated ?? false,
         type: modelType,
-        updateAt: model.updatedAt,
+        updateAt: model.updatedAt || '',
       };
       modelList.push(item);
     }

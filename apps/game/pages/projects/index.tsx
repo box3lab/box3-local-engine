@@ -84,7 +84,7 @@ export default function ProjectsPage({
   const [menuProject, setMenuProject] = useState<string | null>(null);
   const [creatorIdentity, setCreatorIdentity] = useState<PlayerAccountIdentity>(creator);
   const [dialog, setDialog] = useState<
-    'create' | 'submap' | 'delete' | 'details' | 'publish' | null
+    'create' | 'submap' | 'expand' | 'delete' | 'details' | 'publish' | null
   >(null);
   const [projectName, setProjectName] = useState('');
   const [projectPublicId, setProjectPublicId] = useState('');
@@ -238,10 +238,77 @@ export default function ProjectsPage({
     setDialog('details');
   };
 
+  const openExpandDialog = (project: LocalProject) => {
+    setMenuProject(null);
+    setSelectedProject(project);
+    setMapSize('custom');
+    setCustomMapSize([512, 96, 512]);
+    setDialogError('');
+    setDialog('expand');
+  };
+
+  const ensureEditRuntimeReady = async (projectId: string) => {
+    type RuntimeStatus = {
+      phase: 'idle' | 'starting' | 'loading' | 'ready' | 'error';
+      message?: string;
+    };
+    const getStatus = () =>
+      apiClient.getApiLocalProjectsIdRuntime({
+        params: { path: { id: projectId }, query: { mode: 'edit' } },
+      }) as Promise<RuntimeStatus>;
+    await apiClient.postApiLocalProjectsIdRuntime({
+      params: { path: { id: projectId } },
+      body: { mode: 'edit' },
+    });
+    let status = await getStatus();
+    const deadline = Date.now() + 10 * 60 * 1000;
+    while (status.phase !== 'ready') {
+      if (status.phase === 'error') {
+        throw new Error(status.message || '编辑运行时启动失败');
+      }
+      if (Date.now() >= deadline) {
+        throw new Error('等待编辑运行时超时，请稍后重试。');
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 1000));
+      status = await getStatus();
+    }
+  };
+
   const submitProject = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const name = projectName.trim();
     if ((dialog === 'create' || dialog === 'submap' || dialog === 'details') && !name) return;
+
+    if (dialog === 'expand') {
+      if (!selectedProject) throw new Error('请选择要扩容的地图。');
+      await ensureEditRuntimeReady(selectedProject.id);
+      const response = await fetch(
+        `/api/local-projects/${encodeURIComponent(selectedProject.id)}/expand`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shape: {
+              x: customMapSize[0],
+              y: customMapSize[1],
+              z: customMapSize[2],
+            },
+          }),
+        },
+      );
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.message || `地图扩容失败（HTTP ${response.status}）`);
+      }
+      setNotice(
+        result.alreadyExpanded
+          ? `地图尺寸已经是 ${customMapSize.join(' × ')}`
+          : `地图已扩容至 ${customMapSize.join(' × ')}，原地图内容已保留`,
+      );
+      setDialog(null);
+      await refreshProjects();
+      return;
+    }
 
     if (dialog === 'delete' && selectedProject) {
       await deleteProject(selectedProject);
@@ -321,6 +388,7 @@ export default function ProjectsPage({
         openEditor={openProjectEditor}
         editDetails={openDetailsDialog}
         createSubmap={openSubmapDialog}
+        expandMap={openExpandDialog}
         exportProject={openExportDialog}
         recoverProject={(target) => void recovery.open(target)}
         deleteProject={openDeleteDialog}

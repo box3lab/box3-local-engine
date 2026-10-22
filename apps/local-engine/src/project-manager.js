@@ -1234,6 +1234,14 @@ function updateProject(id, patch) {
     return toProjectSummary(metadata);
 }
 
+function updateProjectMapSize(id, mapSize) {
+    const metadata = getProject(id);
+    metadata.mapSize = normalizeMapSize(mapSize);
+    metadata.updatedAt = new Date().toISOString();
+    writeJSON(path.join(projectRoot(id), 'project.json'), metadata);
+    return toProjectSummary(metadata);
+}
+
 function runTar(args, message) {
     const result = spawnSync('tar', args, {
         encoding: 'utf8',
@@ -3035,6 +3043,7 @@ module.exports = {
     publishProject,
     publishMapGroup,
     updateProject,
+    updateProjectMapSize,
     updateProjectScript,
     readProjectScript,
     listProjectSharedScripts,

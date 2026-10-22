@@ -676,7 +676,7 @@ export const ProjectSkinView = (
           timeout: REQUEST_TIMEOUT,
         },
       );
-      return res;
+      return Boolean(res);
     },
     [rename, requestProjectSkin],
   );

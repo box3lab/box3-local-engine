@@ -10,6 +10,15 @@ import {
 } from '../../../server/import-diagnostics';
 import type { ExportProgress, ImportMode, ImportProgress, LocalProject, ProjectExportScope } from '../project-types';
 
+function isByteStream(value: unknown): value is ReadableStream<Uint8Array> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'getReader' in value &&
+    typeof value.getReader === 'function'
+  );
+}
+
 type Options = {
   mainProjects: LocalProject[];
   refreshProjects: () => Promise<void>;
@@ -127,7 +136,10 @@ export function useProjectTransfer(options: Options) {
       let received = 0;
       const chunks: Uint8Array[] = [];
       setExportProgress((current) => current ? { ...current, phase: 'downloading', percent: 35, total, filename } : current);
-      if (result.data) {
+      if (result.data != null) {
+        if (!isByteStream(result.data)) {
+          throw new Error('工程导出服务返回了无效的文件流');
+        }
         const reader = result.data.getReader();
         while (true) {
           const { done, value } = await reader.read();

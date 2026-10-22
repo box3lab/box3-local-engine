@@ -9,6 +9,15 @@ import type {
   PublishProgress,
 } from '../project-types';
 
+function isByteStream(value: unknown): value is ReadableStream<Uint8Array> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'getReader' in value &&
+    typeof value.getReader === 'function'
+  );
+}
+
 type Options = {
   projects: LocalProject[];
   refreshProjects: () => Promise<void>;
@@ -182,7 +191,10 @@ export function useProjectPublisher(options: Options) {
       setPublishProgress((current) =>
         current ? { ...current, phase: 'downloading', percent: 65, total, filename } : current,
       );
-      if (packageResult.data) {
+      if (packageResult.data != null) {
+        if (!isByteStream(packageResult.data)) {
+          throw new Error('打包服务返回了无效的文件流');
+        }
         const reader = packageResult.data.getReader();
         while (true) {
           const { done, value } = await reader.read();

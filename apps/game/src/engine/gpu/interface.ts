@@ -19,3 +19,5 @@ export interface CommonUniformEntries {
   entries: GroupEntry[];
   getOITEntries: (state: GameClientState) => GroupEntry[];
 }
+
+export type CommonUniforms = CommonUniformLayout & CommonUniformEntries;

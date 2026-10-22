@@ -112,8 +112,7 @@ export function isValidName(text: string) {
   }
 
   // 命名中允许使用的字符：中文、大小写英文、数字、空格和部分符号
-  const validName = new RegExp(/^[\p{Unified_Ideograph}\w_ ()'（）-]+$/, 'gu');
-  return validName.test(text);
+  return /^[\p{Unified_Ideograph}\w_ ()'（）-]+$/u.test(text);
 }
 
 export function getTopSelectedId<ValueRDA extends MuRDA<any, any, any, any>>(

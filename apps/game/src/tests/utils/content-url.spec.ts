@@ -41,7 +41,7 @@ test('routes image requests through the same-origin runtime path', () => {
     }) as never);
     expect(requestedUrls).toEqual(['/runtime/play/map/block/QmHash']);
   } finally {
-    if (originalWindow === undefined) delete (globalThis as typeof globalThis & { window?: unknown }).window;
+    if (originalWindow === undefined) Reflect.deleteProperty(globalThis, 'window');
     else Object.defineProperty(globalThis, 'window', { value: originalWindow, configurable: true });
   }
 });

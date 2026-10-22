@@ -263,7 +263,7 @@ function PropertyCardsView(props: Props, ref: Ref<HTMLDivElement | null>) {
 
   const innerRef = useRef<HTMLDivElement>(null);
 
-  useImperativeHandle(ref, () => innerRef.current, []);
+  useImperativeHandle(ref, () => innerRef.current!, []);
 
   const itemsRef = useRef<HTMLDivElement>(null);
 

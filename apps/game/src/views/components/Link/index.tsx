@@ -13,7 +13,7 @@ function useLink(props: LinkProps) {
       rel = 'noopener noreferrer';
     }
   } else {
-    label = props.to['pathname'];
+    label = props.to['pathname'] || '';
   }
   return {
     linkProps: {

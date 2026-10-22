@@ -1,6 +1,7 @@
 import { GameClientState } from '../game-client-schema';
 import { pixelToRay } from '../camera/camera-controller';
 import { vec3, vec2, mat4 } from 'gl-matrix';
+import { toVec3 } from '../utils/vec3';
 import {
   VoxelRaycastHitResult,
   raycast,
@@ -408,10 +409,13 @@ function sizeFixedTransform(
   size: number,
   offset: vec3 | number[],
 ) {
-  vec3.transformMat4(out, p, M);
-  const scale = vec3.distance(eye, out);
-  vec3.transformMat4(out, vec3.scale(out, p, scale / size), M);
-  const pos = vec3.scaleAndAdd(out, out, offset, scale / size);
+  const eyeVector = toVec3(eye);
+  const point = toVec3(p);
+  const offsetVector = toVec3(offset);
+  vec3.transformMat4(out, point, M);
+  const scale = vec3.distance(eyeVector, out);
+  vec3.transformMat4(out, vec3.scale(out, point, scale / size), M);
+  const pos = vec3.scaleAndAdd(out, out, offsetVector, scale / size);
   return {
     pos,
     scaleIndex: scale / size,
@@ -427,9 +431,13 @@ function sizeFixedTransformWithCenter(
   size: number,
   offset: vec3 | number[],
 ) {
-  const scale = vec3.distance(eye, relateP);
-  vec3.transformMat4(out, vec3.scale(out, p, scale / size), M);
-  const pos = vec3.scaleAndAdd(out, out, offset, scale / size);
+  const eyeVector = toVec3(eye);
+  const relatePoint = toVec3(relateP);
+  const point = toVec3(p);
+  const offsetVector = toVec3(offset);
+  const scale = vec3.distance(eyeVector, relatePoint);
+  vec3.transformMat4(out, vec3.scale(out, point, scale / size), M);
+  const pos = vec3.scaleAndAdd(out, out, offsetVector, scale / size);
   return {
     pos,
     scaleIndex: scale / size,
@@ -736,7 +744,7 @@ function handleRing(
     data.mouseState = mouseState;
     data.mouseButton = mouseButton;
     data.scaleIndex = scaleIndex;
-    vec3.copy(data.ringCenter, c);
+    vec3.copy(data.ringCenter, toVec3(c));
     vec3.copy(data.uv_x, uv_x);
     vec3.copy(data.uv_y, uv_y);
     vec2.copy(data.screenPosition, mousePosition);

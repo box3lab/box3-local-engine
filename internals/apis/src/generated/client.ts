@@ -539,6 +539,10 @@ export const apiOperations = {
     "path": "/api/local-projects",
     "method": "POST"
   },
+  "postApiLocalProjectsIdExpand": {
+    "path": "/api/local-projects/{id}/expand",
+    "method": "POST"
+  },
   "postApiLocalProjectsIdMaps": {
     "path": "/api/local-projects/{id}/maps",
     "method": "POST"
@@ -2399,6 +2403,18 @@ export class ApiClient {
     ...init: Parameters<PathBasedClient<paths>["/api/local-projects"]["POST"]>
   ) {
     return this.unwrap(this.postApiLocalProjectsRaw(...init));
+  }
+
+  postApiLocalProjectsIdExpandRaw(
+    ...init: Parameters<PathBasedClient<paths>["/api/local-projects/{id}/expand"]["POST"]>
+  ) {
+    return this.paths["/api/local-projects/{id}/expand"].POST(...init);
+  }
+
+  postApiLocalProjectsIdExpand(
+    ...init: Parameters<PathBasedClient<paths>["/api/local-projects/{id}/expand"]["POST"]>
+  ) {
+    return this.unwrap(this.postApiLocalProjectsIdExpandRaw(...init));
   }
 
   postApiLocalProjectsIdMapsRaw(

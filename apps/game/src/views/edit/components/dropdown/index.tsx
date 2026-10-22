@@ -28,7 +28,7 @@ type DropdownProps<T> = {
   value?: T[]; // one mean only first level, array mean [first level's value, second level's value]
   onChange: (value: T[], selectOptions?: DropdownDataObject<T>[]) => void;
   className?: { [name: string]: string };
-  containerClass?: React.CSSProperties;
+  containerClass?: string;
   dark?: boolean;
   disable?: boolean;
 };

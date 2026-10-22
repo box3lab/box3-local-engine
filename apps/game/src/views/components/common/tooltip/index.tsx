@@ -22,6 +22,7 @@ interface BoundingClientRect {
 }
 
 interface TooltipProps {
+  children?: React.ReactNode;
   content: string | JSX.Element;
   visible?: boolean;
   // the place where the tooltip is
