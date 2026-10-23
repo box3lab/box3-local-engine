@@ -55,10 +55,10 @@ export async function getMapContentInfo(
   if (!ServerConfig.isLocalGameServer) {
     throw new Error('BOX3 Local Engine requires the local project catalog');
   }
-  const localWorld = process.env.BOX_PLAY_LIBRARY_PATH
+  const localWorld = mode === 'play' && process.env.BOX_PLAY_LIBRARY_PATH
     ? findPlayWorld(containerName)
     : undefined;
-  if (process.env.BOX_PLAY_LIBRARY_PATH && !localWorld) {
+  if (mode === 'play' && process.env.BOX_PLAY_LIBRARY_PATH && !localWorld) {
     throw new Error(`Play world does not exist: ${containerName}`);
   }
   const localProject = process.env.BOX_DEPLOYMENT_MODE === 'creator'

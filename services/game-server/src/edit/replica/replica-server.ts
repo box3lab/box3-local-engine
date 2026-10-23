@@ -2677,6 +2677,7 @@ export class EditReplicaServer {
       this._logger.error(
         `error saving project ${JSON.stringify(e.stack || e)}`,
       );
+      throw e;
     } finally {
       this._setBusyState(false);
       this._permissionSemaphore.v();

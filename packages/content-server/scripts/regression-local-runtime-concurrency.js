@@ -7,6 +7,7 @@ const UPSTREAM_LIMIT = 32
 
 let active = 0
 let maximumActive = 0
+const observedTimeouts = []
 
 class CapacityLimitedXHR {
   open(_method, url) {
@@ -14,6 +15,7 @@ class CapacityLimitedXHR {
   }
 
   send() {
+    observedTimeouts.push(this.timeout)
     active += 1
     maximumActive = Math.max(maximumActive, active)
     const rejectedByUpstream = active > UPSTREAM_LIMIT
@@ -48,6 +50,10 @@ Promise.all(
   assert.ok(
     maximumActive <= UPSTREAM_LIMIT,
     `local runtime opened ${maximumActive} requests concurrently`,
+  )
+  assert.ok(
+    observedTimeouts.every((timeout) => timeout >= 31 * 60 * 1000),
+    'local runtime requests must outlive the runtime startup window',
   )
   console.log(
     `local runtime request concurrency is bounded: max=${maximumActive}`,

@@ -37,6 +37,7 @@ import { useProjectRecovery } from '../../components/project-management/workflow
 import { useProjectPublisher } from '../../components/project-management/workflows/use-project-publisher';
 import { openProjectEditor } from '../../components/project-management/project-runtime-navigation';
 import { apiClient } from '../../src/apis/client';
+import { LOCAL_RUNTIME_OPERATION_TIMEOUT_MS } from '../../shared/local-runtime-timeouts';
 
 export const getServerSideProps: GetServerSideProps<ProjectsPageProps> = async ({ req, res, query }) => {
   if (['play', 'player-service'].includes(process.env.BOX_DEPLOYMENT_MODE || '')) {
@@ -261,7 +262,7 @@ export default function ProjectsPage({
       body: { mode: 'edit' },
     });
     let status = await getStatus();
-    const deadline = Date.now() + 10 * 60 * 1000;
+    const deadline = Date.now() + LOCAL_RUNTIME_OPERATION_TIMEOUT_MS;
     while (status.phase !== 'ready') {
       if (status.phase === 'error') {
         throw new Error(status.message || '编辑运行时启动失败');

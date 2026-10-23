@@ -1107,6 +1107,32 @@ function createProject({ id, name, author = '', description = '', mapSize }) {
             // retain their existing portable project format.
             copyReadableDirectorySync(templateDataRoot, path.join(root, 'source'));
         }
+        const now = new Date().toISOString();
+        const themes = ['sunset', 'ocean', 'forest', 'violet'];
+        const metadata = {
+            formatVersion: 1,
+            id: safeId,
+            permanentMapId: createPermanentMapId(),
+            publicId: safeId,
+            name: name.trim(),
+            author: author.trim().slice(0, 80),
+            description: description.trim(),
+            theme: themes[listProjects().length % themes.length],
+            createdAt: now,
+            updatedAt: now,
+            releases: [],
+            mapGroupId: safeId,
+            mapRole: 'main',
+            mainProjectId: safeId,
+            // These values are consumed only when the first edit runtime creates its
+            // project state. Afterwards the voxel data in project-state.json is the
+            // authoritative editable map, exactly as it is for imported projects.
+            mapSize: normalizedMapSize,
+            templateId: 'blank',
+            terrainTheme: mapTemplatePresets.blank,
+        };
+        writeJSON(path.join(root, 'project.json'), metadata);
+        return toProjectSummary(metadata);
     } catch (error) {
         // A failed first attempt must not leave a project that blocks retrying the
         // same map ID. Cleanup is best-effort because Docker Desktop may briefly
@@ -1114,32 +1140,6 @@ function createProject({ id, name, author = '', description = '', mapSize }) {
         rollbackDirectory(root);
         throw error;
     }
-    const now = new Date().toISOString();
-    const themes = ['sunset', 'ocean', 'forest', 'violet'];
-    const metadata = {
-        formatVersion: 1,
-        id: safeId,
-        permanentMapId: createPermanentMapId(),
-        publicId: safeId,
-        name: name.trim(),
-        author: author.trim().slice(0, 80),
-        description: description.trim(),
-        theme: themes[listProjects().length % themes.length],
-        createdAt: now,
-        updatedAt: now,
-        releases: [],
-        mapGroupId: safeId,
-        mapRole: 'main',
-        mainProjectId: safeId,
-        // These values are consumed only when the first edit runtime creates its
-        // project state. Afterwards the voxel data in project-state.json is the
-        // authoritative editable map, exactly as it is for imported projects.
-        mapSize: normalizedMapSize,
-        templateId: 'blank',
-        terrainTheme: mapTemplatePresets.blank,
-    };
-    writeJSON(path.join(root, 'project.json'), metadata);
-    return toProjectSummary(metadata);
 }
 
 function projectStorageIdentity(id) {

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { allowAuthenticatedCreatorApi } from '../../../../server/creator-api-security';
 import { getLocalProjectManager } from '../../../../server/local-project-manager';
+import { LOCAL_RUNTIME_OPERATION_TIMEOUT_MS } from '../../../../shared/local-runtime-timeouts';
 
 function editRuntimePort() {
   return Number(
@@ -21,7 +22,7 @@ async function postToEditRuntime(projectId: string, route: string, body?: unknow
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           }),
-      signal: AbortSignal.timeout(10 * 60 * 1000),
+      signal: AbortSignal.timeout(LOCAL_RUNTIME_OPERATION_TIMEOUT_MS),
     },
   );
   const text = await response.text();

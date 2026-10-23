@@ -26,6 +26,7 @@
   "scripts": {
     "build": "rm -rf ./build && tsc",
     "build:watch": "tsc",
+    "test:filesystem-store": "node scripts/regression-file-system-store.js",
     "test:local-runtime-concurrency": "node scripts/regression-local-runtime-concurrency.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
