@@ -16,7 +16,7 @@ describe('local runtime prewarm', () => {
   test('schedules every requested project without waiting for engine startup', async () => {
     process.env.LOCAL_EDIT_SERVER_URL = 'http://127.0.0.1:9968/';
     process.env.LOCAL_GAME_SERVER_URL = 'http://127.0.0.1:9967/';
-    global.fetch = jest.fn().mockResolvedValue({ ok: true, status: 202 }) as typeof fetch;
+    global.fetch = jest.fn(async () => new Response(null, { status: 202 }));
 
     const results = await prewarmLocalRuntimes(
       ['main-map', 'sub-map'],

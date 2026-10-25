@@ -12,6 +12,7 @@ import { intlMessage } from 'src/utils/i18n';
 import style from './index.module.css';
 
 type Props = {
+  children?: React.ReactNode;
   name: string;
   value: string | number | boolean;
   customInput?: boolean;
@@ -526,6 +527,7 @@ export class SwitcherProperty extends React.Component<
 }
 
 interface CustomPropertyProps {
+  children?: React.ReactNode;
   name: string;
   disabled?: boolean;
   disabledStyle?: string;

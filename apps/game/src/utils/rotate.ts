@@ -104,7 +104,7 @@ export function getEuler(out:vec3, q:quat) {
 const degPerRad = 180 / Math.PI;
 
 export function quatToAxisAngleForm(q:quat) {
-    const axis:number[] = [];
+    const axis = vec3.create();
     let angle = quat.getAxisAngle(axis, q);
     angle = angle * degPerRad;
     return {axis, angle};

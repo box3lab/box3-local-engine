@@ -34,6 +34,7 @@ export const UI3DContextConsumer = UI3DContext.Consumer;
 
 export type UI3DContainerProps = {
   ui3D: GameClientState['ui3D'];
+  children?: React.ReactNode;
 
   onVoxel?: UI3DVoxelHandler;
   onEntity?: UI3DEntityHandler;

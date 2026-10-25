@@ -9,7 +9,7 @@ type Props = {
   catalog: ProjectCatalogController;
   notice: string;
   importProgress: ImportProgress | null;
-  importInputRef: RefObject<HTMLInputElement>;
+  importInputRef: RefObject<HTMLInputElement | null>;
   chooseProjectFile: (file: File) => void;
   openCreateDialog: () => void;
   renderProjectCard: (project: LocalProject) => ReactNode;

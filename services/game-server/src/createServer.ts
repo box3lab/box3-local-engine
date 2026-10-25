@@ -20,6 +20,7 @@ import { bodyParse } from '@box/utils/backend';
 import { EventBus } from '@box/utils/event';
 import { getRealIP } from '@box/utils/ip';
 import { Logger as LegacyLogger } from '@box/utils/logger';
+import { freeVoxels } from '@box/utils/voxel';
 import { verifyRuntimePlayerIdentity } from '@box/utils/local-player-identity';
 import * as http from 'http';
 import * as https from 'https';
@@ -54,6 +55,7 @@ import { FrameskipsManager } from './utils/frameskips-manager';
 import { rootLogger } from './utils/logger';
 import { ScriptServer } from './utils/script-server/type';
 import { parsePrebakeVoxelData } from './voxel/voxel-server';
+import { expandVoxelMap, validateVoxelExpansionShape } from './voxel/voxel-expansion';
 import {
   getLocalProjectModelPreviews,
   getLocalProjectModelProjects,
@@ -629,6 +631,126 @@ export async function createGameServer(spec: {
       } catch (error) {
         res.writeHead(500, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ message: (error as Error).message }));
+      }
+    };
+
+    spec.httpRoutes['/internal/validate-local-project-expansion'] = async (req, res) => {
+      if (!localOnly(req, res)) return;
+      if (req.method !== 'POST') {
+        res.writeHead(405, { Allow: 'POST' });
+        res.end('method not allowed');
+        return;
+      }
+      try {
+        const body = await bodyParse(req) as {
+          shape?: { x?: unknown; y?: unknown; z?: unknown };
+        };
+        const shape = body.shape;
+        if (
+          !shape ||
+          typeof shape.x !== 'number' ||
+          typeof shape.y !== 'number' ||
+          typeof shape.z !== 'number'
+        ) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: '请提供有效的目标地图尺寸。' }));
+          return;
+        }
+        const game = editServer.state.game;
+        if (game.state.replica.running) {
+          res.writeHead(409, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: '请先停止正在运行的地图，再执行扩容。' }));
+          return;
+        }
+        const current = game.state.voxels;
+        const alreadyExpanded =
+          current.shape[0] === shape.x &&
+          current.shape[1] === shape.y &&
+          current.shape[2] === shape.z;
+        if (!alreadyExpanded) {
+          validateVoxelExpansionShape(current.shape, [shape.x, shape.y, shape.z]);
+        }
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ alreadyExpanded }));
+      } catch (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          message: error instanceof Error ? error.message : String(error),
+        }));
+      }
+    };
+
+    spec.httpRoutes['/internal/expand-local-project'] = async (req, res) => {
+      if (!localOnly(req, res)) return;
+      if (req.method !== 'POST') {
+        res.writeHead(405, { Allow: 'POST' });
+        res.end('method not allowed');
+        return;
+      }
+      let expanded: ReturnType<typeof expandVoxelMap> | undefined;
+      try {
+        const body = await bodyParse(req) as {
+          shape?: { x?: unknown; y?: unknown; z?: unknown };
+        };
+        const shape = body.shape;
+        if (
+          !shape ||
+          typeof shape.x !== 'number' ||
+          typeof shape.y !== 'number' ||
+          typeof shape.z !== 'number'
+        ) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: '请提供有效的目标地图尺寸。' }));
+          return;
+        }
+        const game = editServer.state.game;
+        if (game.state.replica.running) {
+          res.writeHead(409, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: '请先停止正在运行的地图，再执行扩容。' }));
+          return;
+        }
+        const current = game.state.voxels;
+        if (
+          current.shape[0] === shape.x &&
+          current.shape[1] === shape.y &&
+          current.shape[2] === shape.z
+        ) {
+          const permissionHash = await editServer.replica.saveProject();
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            shape,
+            permissionHash,
+            alreadyExpanded: true,
+          }));
+          return;
+        }
+        try {
+          validateVoxelExpansionShape(current.shape, [shape.x, shape.y, shape.z]);
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: error instanceof Error ? error.message : String(error) }));
+          return;
+        }
+        expanded = expandVoxelMap(current, [shape.x, shape.y, shape.z]);
+        const success = await game.voxel.reset(expanded);
+        if (!success) {
+          res.writeHead(409, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ message: '地图正在重置，请稍后重试。' }));
+          return;
+        }
+        const permissionHash = await editServer.replica.saveProject();
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          shape: { x: shape.x, y: shape.y, z: shape.z },
+          permissionHash,
+        }));
+      } catch (error) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: error instanceof Error ? error.message : String(error) }));
+      } finally {
+        if (expanded) {
+          freeVoxels(expanded);
+        }
       }
     };
 

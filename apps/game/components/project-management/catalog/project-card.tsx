@@ -1,4 +1,4 @@
-import { Clock3, Download, History, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Clock3, Download, Expand, History, Pencil, Plus, Trash2 } from 'lucide-react';
 
 import styles from '../../../pages/projects/projects.module.css';
 import { defaultMapCover } from '../project-fixtures';
@@ -14,6 +14,7 @@ type Props = {
   openEditor: (project: LocalProject) => void;
   editDetails: (project: LocalProject) => void;
   createSubmap: (project: LocalProject) => void;
+  expandMap: (project: LocalProject) => void;
   exportProject: (project: LocalProject) => void;
   recoverProject: (project: LocalProject) => void;
   deleteProject: (project: LocalProject) => void;
@@ -59,6 +60,7 @@ export function ProjectCard(props: Props) {
               <div className={styles.menu} role="menu">
                 <button role="menuitem" onClick={() => props.editDetails(project)}><Pencil size={15} /> 编辑信息</button>
                 {project.mapRole === 'main' ? <button role="menuitem" onClick={() => props.createSubmap(project)}><Plus size={15} /> 新建副地图</button> : null}
+                <button role="menuitem" onClick={() => props.expandMap(project)}><Expand size={15} /> 扩大地图</button>
                 <button role="menuitem" disabled={exporting} onClick={() => props.exportProject(project)}><Download size={15} /> 导出</button>
                 <button role="menuitem" onClick={() => props.recoverProject(project)}><History size={15} /> 恢复历史版本</button>
                 <button

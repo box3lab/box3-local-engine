@@ -3382,6 +3382,69 @@
         ]
       }
     },
+    "/api/local-projects/{id}/expand": {
+      "post": {
+        "operationId": "postApiLocalProjectsIdExpand",
+        "summary": "执行 Creator 工程操作",
+        "description": "此操作用于“执行 Creator 工程操作”。该接口用于管理本地 Creator 工程、地图、快照和发布流程。 该操作可能创建资源、更新状态或触发后台任务。 该接口不要求额外的 OpenAPI 鉴权信息。",
+        "tags": [
+          "Creator 工程"
+        ],
+        "security": [],
+        "x-box-deployment-modes": [
+          "creator"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "目标资源 ID。",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "操作成功，返回“执行 Creator 工程操作”的处理结果。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "请求失败，返回可供界面展示或日志排查的错误信息。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "description": "执行“执行 Creator 工程操作”所需的请求数据。具体字段以请求模型为准。"
+        },
+        "x-box-services": [
+          "engine-web"
+        ]
+      }
+    },
     "/api/local-projects/{id}/export": {
       "get": {
         "operationId": "getApiLocalProjectsIdExport",
@@ -3701,6 +3764,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "description": "运行或查询模式。",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3750,6 +3822,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "description": "运行或查询模式。",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3776,12 +3857,23 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true
+                "required": [
+                  "mode"
+                ],
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "edit",
+                      "play"
+                    ]
+                  }
+                }
               }
             }
           },
@@ -15684,6 +15776,14 @@
       ],
       "service": "engine-web",
       "source": "apps/game/pages/api/health-check.ts"
+    },
+    {
+      "path": "/api/local-projects/{id}/expand",
+      "methods": [
+        "POST"
+      ],
+      "service": "engine-web",
+      "source": "apps/game/pages/api/local-projects/[id]/expand.ts"
     },
     {
       "path": "/api/local-projects/{id}/export",

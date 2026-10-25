@@ -1,4 +1,5 @@
 import { vec3 } from 'gl-matrix';
+import { toVec3 } from './vec3';
 
 export type TestCone = {
   cosa:number,    //he half angle between the axis and the surface
@@ -7,13 +8,15 @@ export type TestCone = {
   tipPos:vec3,
 };
 
-export function intersectCone(cone:TestCone, ray:{origin:vec3|number[], dir:vec3|number[]}) {
-  const co = vec3.sub(vec3.create(), ray.origin, cone.tipPos);
-  const rDir_dot_axis = vec3.dot(ray.dir, cone.axis);
+export function intersectCone(cone:TestCone, ray:{origin:ArrayLike<number>, dir:ArrayLike<number>}) {
+  const origin = toVec3(ray.origin);
+  const direction = toVec3(ray.dir);
+  const co = vec3.sub(vec3.create(), origin, cone.tipPos);
+  const rDir_dot_axis = vec3.dot(direction, cone.axis);
   const co_dot_axis = vec3.dot(co, cone.axis);
   const cosA2 = cone.cosa * cone.cosa;
   const a = rDir_dot_axis * rDir_dot_axis - cosA2;
-  const b = 2 * (rDir_dot_axis * co_dot_axis - vec3.dot(ray.dir, co) * cosA2);
+  const b = 2 * (rDir_dot_axis * co_dot_axis - vec3.dot(direction, co) * cosA2);
   const c = co_dot_axis * co_dot_axis - vec3.dot(co, co) * cosA2;
 
   let det = b * b - 4 * a * c;
@@ -30,7 +33,7 @@ export function intersectCone(cone:TestCone, ray:{origin:vec3|number[], dir:vec3
   if (t < 0.)  {
       return null;
   }
-  const cp = vec3.sub(vec3.create(), vec3.add(vec3.create(), ray.origin, vec3.scale(vec3.create(), ray.dir, t)), cone.tipPos);
+  const cp = vec3.sub(vec3.create(), vec3.add(vec3.create(), origin, vec3.scale(vec3.create(), direction, t)), cone.tipPos);
   const h = vec3.dot(cp, cone.axis);
   if (h < 0 || h > cone.height) {
       return null;

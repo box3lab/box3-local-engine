@@ -101,7 +101,7 @@ function ScrollTriggerView(props: Props, ref: Ref<ScrollManage>) {
     }
     const distance =
       content.getBoundingClientRect().bottom -
-      containerRef.current.getBoundingClientRect().bottom;
+      container.getBoundingClientRect().bottom;
     if (distance < OFFSET) {
       loadMoreDebounce();
     }

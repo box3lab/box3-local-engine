@@ -39,7 +39,7 @@ export default [
         inject: true,
         modules: {
           generateScopedName: function (name, filename) {
-            const splitFilename = filename.split('/');
+            const splitFilename = filename.replace(/\\/g, '/').split('/');
             const componentName = splitFilename[splitFilename.length - 2];
 
             const nameList = [name];

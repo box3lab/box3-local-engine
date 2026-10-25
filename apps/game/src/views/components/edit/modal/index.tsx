@@ -5,6 +5,7 @@ import { calc_class_name } from 'src/utils/classname';
 import style from './index.module.css';
 
 type ModalProps = {
+  children?: React.ReactNode;
   title?: string;
   smallTitle?: boolean;
   visible: boolean;

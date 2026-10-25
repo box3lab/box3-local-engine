@@ -6,6 +6,7 @@ interface BorderProps {
   size: number;
 }
 interface Props {
+  children?: React.ReactNode;
   hideDot?: boolean;
   color?: string;
   mode?: 'inside' | 'vertical' | 'leftside' | 'topRight';

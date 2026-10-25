@@ -9,6 +9,8 @@ type RuntimeIdentityResponse = {
   assertion: string;
 };
 
+const PLAYER_SERVICE_REQUEST_TIMEOUT_MS = 35_000;
+
 export class PlayerAuthenticationRequiredError extends Error {
   constructor() {
     super('AUTH_REQUIRED');
@@ -75,7 +77,10 @@ export async function resolvePlayerServiceIdentity(
   ip: string,
 ): Promise<RuntimeIdentityResponse> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10_000);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    PLAYER_SERVICE_REQUEST_TIMEOUT_MS,
+  );
   try {
     const { response, data } = await requestRuntimeIdentity(
       {
@@ -134,7 +139,10 @@ export async function hasAuthenticatedPlayer(cookie = '', ip = '', userAgent = '
  */
 export async function getAuthenticatedPlayerIdentity(cookie = '', ip = '', userAgent = '') {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10_000);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    PLAYER_SERVICE_REQUEST_TIMEOUT_MS,
+  );
   try {
     const { response, data } = await requestRuntimeIdentity(
       {

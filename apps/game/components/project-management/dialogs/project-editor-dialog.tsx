@@ -8,7 +8,7 @@ import { customMapSizeMessage } from '../project-presentation';
 import type { AssetDistributionConfiguration, LocalProject, MapSizeChoice } from '../project-types';
 import { AssetDistributionFields } from './asset-distribution-fields';
 
-export type ProjectDialogKind = 'create' | 'submap' | 'delete' | 'details' | 'publish';
+export type ProjectDialogKind = 'create' | 'submap' | 'expand' | 'delete' | 'details' | 'publish';
 
 export type ProjectEditorController = {
   dialog: ProjectDialogKind | null;
@@ -93,11 +93,13 @@ export function ProjectEditorDialog({ controller: c }: { controller: ProjectEdit
                     ? '新建地图组'
                     : dialog === 'submap'
                       ? '创建副地图'
-                      : dialog === 'details'
-                        ? '编辑信息'
-                        : dialog === 'delete'
-                          ? '删除作品'
-                          : '导出游戏包'}
+                      : dialog === 'expand'
+                        ? '扩大地图'
+                        : dialog === 'details'
+                          ? '编辑信息'
+                          : dialog === 'delete'
+                            ? '删除作品'
+                            : '导出游戏包'}
                 </h2>
               </div>
             </div>
@@ -348,6 +350,66 @@ export function ProjectEditorDialog({ controller: c }: { controller: ProjectEdit
                 )}
               </>
             )}
+            {dialog === 'expand' && (
+              <div className={styles.dialogFields}>
+                <p>
+                  将地图扩大到指定尺寸，原地图会保留在原坐标，新增加的区域为空气。扩容前会自动创建恢复快照；此操作会保存并重载地图，请先停止正在运行的地图。
+                </p>
+                {submitting && (
+                  <p role="status">
+                    正在准备编辑运行时并保存地图区块，较大的地图可能需要几分钟……
+                  </p>
+                )}
+                <div className={styles.customMapSize}>
+                  <div className={styles.mapChoiceLabel}>
+                    <label>目标尺寸</label>
+                    <span>宽 × 高 × 长</span>
+                  </div>
+                  <div className={styles.customMapSizeGrid}>
+                    <label>
+                      宽
+                      <input
+                        type="number"
+                        min={16}
+                        max={1024}
+                        step={16}
+                        value={customMapSize[0]}
+                        onChange={(event) => updateCustomMapSize(0, event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      高
+                      <input
+                        type="number"
+                        min={16}
+                        max={128}
+                        step={16}
+                        value={customMapSize[1]}
+                        onChange={(event) => updateCustomMapSize(1, event.target.value)}
+                      />
+                    </label>
+                    <label>
+                      长
+                      <input
+                        type="number"
+                        min={16}
+                        max={1024}
+                        step={16}
+                        value={customMapSize[2]}
+                        onChange={(event) => updateCustomMapSize(2, event.target.value)}
+                      />
+                    </label>
+                  </div>
+                  {customSizeFeedback && (
+                    <p
+                      className={`${styles.customMapSizeHint} ${styles[`customMapSizeHint${customSizeFeedback.level}`]}`}
+                    >
+                      {customSizeFeedback.text} 每个方向都不能小于当前地图。
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
             {dialog === 'publish' && (
               <>
                 <p>主地图和全部副地图将使用同一版本号，合并为一个可一次导入游玩端的游戏包。每次导出会创建不可变版本，请使用新的版本号。</p>
@@ -425,7 +487,9 @@ export function ProjectEditorDialog({ controller: c }: { controller: ProjectEdit
                     ? !projectName.trim() || (dialog === 'details' && !projectPublicId.trim())
                     : dialog === 'publish'
                       ? !releaseVersion.trim()
-                      : false)
+                      : dialog === 'expand'
+                        ? !customSizeFeedback || customSizeFeedback.level === 'error'
+                        : false)
                 }
               >
                 {submitting
@@ -438,7 +502,9 @@ export function ProjectEditorDialog({ controller: c }: { controller: ProjectEdit
                         ? '保存'
                         : dialog === 'delete'
                           ? '删除'
-                          : '开始导出'}
+                          : dialog === 'expand'
+                            ? '确认扩容并保存'
+                            : '开始导出'}
               </button>
             </div>
           </form>

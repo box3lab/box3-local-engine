@@ -118,8 +118,8 @@ export function CreatorModelLibrary({ voxaUrl, canManageModels }: {
     try {
       const data = (await apiClient.postApiCreatorModelsImport({
         headers: { 'Content-Type': file.type || 'application/vnd.box.voxaproject+zip' },
-        body: file,
-        bodySerializer: (body) => body,
+        body: { file },
+        bodySerializer: () => file,
       })) as { requiresResourceResave?: boolean; modelName?: string };
       setNotice(data.requiresResourceResave
         ? `已导入“${data.modelName || file.name}”。此旧工程未包含模型资源，请在 VOXA 中打开并保存一次后再放置。`

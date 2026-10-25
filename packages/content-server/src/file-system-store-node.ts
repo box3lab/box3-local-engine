@@ -46,6 +46,8 @@ export class FileSystemContentServer implements ContentServer {
     const hash = contentHash(snapshot);
     const target = path.join(this.directory, hash);
 
+    await fs.mkdir(this.directory, { recursive: true });
+
     try {
       await fs.writeFile(target, snapshot, { flag: 'wx' });
     } catch (error) {

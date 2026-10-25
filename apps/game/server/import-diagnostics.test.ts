@@ -43,8 +43,6 @@ describe('map import diagnostics', () => {
   test('turns compatibility errors and warnings into visible map-specific rows', () => {
     expect(
       compatibilityDiagnostics({
-        level: 'error',
-        summary: { errors: 1, warnings: 1, missingBlobCount: 1 },
         errors: [
           {
             code: 'missing-blob',

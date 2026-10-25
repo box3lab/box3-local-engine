@@ -219,12 +219,11 @@ export class PlayClient extends EngineClient {
    */
   public connectGame = async (hash: string, serverId?: string) => {
     if (this.disposed) return;
+    const token = getToken();
     const response = await fetch(
       `${clientConfig.ARENA_URL}/api/getMapInfo?hash=${hash}&mode=play`,
       {
-        headers: {
-          authorization: getToken(),
-        },
+        headers: token ? { authorization: token } : undefined,
         credentials: 'include',
       },
     );

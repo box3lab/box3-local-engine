@@ -6,7 +6,7 @@ import { REGLLoader } from './regl';
 export default function (
   regl,
   reglLoader: REGLLoader,
-  context2D: CanvasRenderingContext2D,
+  context2D?: CanvasRenderingContext2D,
 ) {
   const clipPos = vec4.create();
   const worldPos = vec4.create();
@@ -22,6 +22,9 @@ export default function (
         perspective?: boolean;
       },
     ) => {
+      if (!context2D) {
+        return;
+      }
       worldPos[0] = position[0];
       worldPos[1] = position[1];
       worldPos[2] = position[2];

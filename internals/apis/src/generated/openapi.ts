@@ -860,6 +860,26 @@ export interface paths {
         patch: operations["patchApiLocalProjectsId"];
         trace?: never;
     };
+    "/api/local-projects/{id}/expand": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 执行 Creator 工程操作
+         * @description 此操作用于“执行 Creator 工程操作”。该接口用于管理本地 Creator 工程、地图、快照和发布流程。 该操作可能创建资源、更新状态或触发后台任务。 该接口不要求额外的 OpenAPI 鉴权信息。
+         */
+        post: operations["postApiLocalProjectsIdExpand"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/local-projects/{id}/export": {
         parameters: {
             query?: never;
@@ -5512,6 +5532,47 @@ export interface operations {
             };
         };
     };
+    postApiLocalProjectsIdExpand: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 目标资源 ID。 */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description 执行“执行 Creator 工程操作”所需的请求数据。具体字段以请求模型为准。 */
+        requestBody?: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description 操作成功，返回“执行 Creator 工程操作”的处理结果。 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description 请求失败，返回可供界面展示或日志排查的错误信息。 */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     getApiLocalProjectsIdExport: {
         parameters: {
             query?: {
@@ -5708,7 +5769,10 @@ export interface operations {
     };
     getApiLocalProjectsIdRuntime: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description 运行或查询模式。 */
+                mode?: string;
+            };
             header?: never;
             path: {
                 /** @description 目标资源 ID。 */
@@ -5742,7 +5806,10 @@ export interface operations {
     };
     postApiLocalProjectsIdRuntime: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description 运行或查询模式。 */
+                mode?: string;
+            };
             header?: never;
             path: {
                 /** @description 目标资源 ID。 */
@@ -5751,10 +5818,11 @@ export interface operations {
             cookie?: never;
         };
         /** @description 执行“启动或重启工程运行时”所需的请求数据。具体字段以请求模型为准。 */
-        requestBody?: {
+        requestBody: {
             content: {
                 "application/json": {
-                    [key: string]: unknown;
+                    /** @enum {string} */
+                    mode: "edit" | "play";
                 };
             };
         };

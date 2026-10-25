@@ -56,10 +56,9 @@ const config = {
   },
   assetPrefix: (!isLocalDev && CDNPath) || '',
   experimental: {
-    // Runtime assets can be much larger than ordinary page responses. Keep
-    // the single-origin proxy from dropping slow map downloads at Next's
-    // 30-second default.
-    proxyTimeout: 300_000,
+    // Local map requests can wait for the runtime's 30-minute startup window
+    // before the first health check succeeds.
+    proxyTimeout: 31 * 60 * 1000,
   },
   async rewrites() {
     const playerAdminAtRoot = process.env.BOX_DEPLOYMENT_MODE === 'player-service';

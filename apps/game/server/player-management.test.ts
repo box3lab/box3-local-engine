@@ -34,6 +34,7 @@ function player(changes: Partial<PlayerAccountView> = {}): PlayerAccountView {
     lastLoginIp: '127.0.0.1',
     loginCount: 3,
     activeSessionCount: 1,
+    activeCreatorTokenCount: 0,
     adminNote: '',
     tags: [],
     banReason: '',
@@ -104,6 +105,8 @@ describe('player profile persistence', () => {
         creatorPermissions: [],
         role: 'player',
         status: 'active',
+        userKey: 'local:0123456789abcdef0123456789abcdef',
+        expiresAt: Date.now() + 60_000,
       })).not.toThrow();
     } finally {
       if (previousSecret === undefined) delete process.env.PERMISSION_TOKEN_SECRET;

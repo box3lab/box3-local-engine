@@ -91,6 +91,9 @@ const contracts = {
 }
 
 const requestContracts = {
+  'post /api/local-projects/{id}/runtime': object({
+    mode: { type: 'string', enum: ['edit', 'play'] },
+  }),
   'post /api/player-auth/transfer': object({ source: { type: 'string', enum: ['play', 'creator'] }, challenge: { type: 'string', pattern: '^[A-Za-z0-9_-]{43}$' } }),
   'post /api/player-internal/login-transfer': object({ code: { type: 'string', pattern: '^[A-Za-z0-9_-]{43}$' }, source: { type: 'string', enum: ['play', 'creator'] }, verifier: { type: 'string', pattern: '^[A-Za-z0-9_-]{43}$' } }),
   'post /api/player-internal/script-metadata':{...object({mapId:{type:'string'},groupId:{type:'string'},mode:{type:'string',enum:['edit','play']},name:{type:'string',minLength:1,maxLength:64},projectId:{type:'string'},publicId:{type:'string',maxLength:128},description:{type:'string',maxLength:2000},version:{type:'string',maxLength:64},},['mapId','mode','name']),additionalProperties:false},

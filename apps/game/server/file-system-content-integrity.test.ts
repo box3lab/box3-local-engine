@@ -3,8 +3,19 @@ import { mkdtemp, rm } from 'fs/promises';
 import { tmpdir } from 'os';
 import path from 'path';
 import { createHash } from 'crypto';
-import bs58 from 'bs58';
 import { FileSystemContentServer } from '../../../packages/content-server/src/file-system-store-node';
+
+function encodeBase58(bytes: Uint8Array): string {
+  const alphabet =
+    '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  let value = BigInt(`0x${Buffer.from(bytes).toString('hex')}`);
+  let encoded = '';
+  while (value > 0n) {
+    encoded = alphabet[Number(value % 58n)] + encoded;
+    value /= 58n;
+  }
+  return encoded;
+}
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -21,7 +32,7 @@ test.each(['buffer', 'view'])(
     const input =
       kind === 'buffer' ? backing : new Uint8Array(backing.buffer, backing.byteOffset + 7, 20);
     const original = Buffer.from(input);
-    const expected = bs58.encode(
+    const expected = encodeBase58(
       Buffer.concat([Buffer.from([0x12, 0x20]), createHash('sha256').update(original).digest()]),
     );
     const pending = store.store(input);
