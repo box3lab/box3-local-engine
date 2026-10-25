@@ -1243,6 +1243,10 @@ function updateProjectMapSize(id, mapSize) {
 }
 
 function runTar(args, message) {
+    // On Windows, Git Bash GNU tar does not accept backslash paths such as
+    // C:\\Users\\... Convert them to forward-slash form (C:/Users/...) so the
+    // tar child process can open them.
+    args = args.map((a) => typeof a === 'string' ? a.replace(/^([A-Za-z]):[\/\\]/g, (_, d) => '/' + d.toLowerCase() + '/').replace(/\\/g, '/') : a);
     const result = spawnSync('tar', args, {
         encoding: 'utf8',
         // Keep ordinary tar failures readable without allowing the Node default
@@ -1257,7 +1261,6 @@ function runTar(args, message) {
     }
     return result.stdout;
 }
-
 function forEachFileLineSync(filePath, visit) {
     const descriptor = fs.openSync(filePath, 'r');
     const chunk = Buffer.allocUnsafe(64 * 1024);
@@ -1674,7 +1677,8 @@ function archiveEntriesAreSafe(archivePath) {
     let outputDescriptor;
     try {
         outputDescriptor = fs.openSync(entryListPath, 'wx');
-        const result = spawnSync('tar', ['-tzf', archivePath], {
+        const convPath = typeof archivePath === 'string' ? archivePath.replace(/^([A-Za-z]):[\/\\]/g, (_, d) => '/' + d.toLowerCase() + '/').replace(/\\/g, '/') : archivePath;
+        const result = spawnSync('tar', ['-tzf', convPath], {
             encoding: 'utf8',
             stdio: ['ignore', outputDescriptor, 'pipe'],
             maxBuffer: 16 * 1024 * 1024,
