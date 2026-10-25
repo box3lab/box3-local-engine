@@ -20,10 +20,10 @@ function response() {
   const result = {
     statusCode: 200,
     headers: {} as Record<string, string>,
-    body: undefined as unknown,
+    body: undefined as (Record<string, unknown> & { loginApiUrl?: string }) | undefined,
     status(code: number) { this.statusCode = code; return this },
     setHeader(name: string, value: string) { this.headers[name] = value; return this },
-    json(body: unknown) { this.body = body; return this },
+    json(body: Record<string, unknown>) { this.body = body; return this },
     end() { return this },
   }
   return result as unknown as NextApiResponse & typeof result
@@ -63,7 +63,7 @@ describe('Player Launcher Play endpoints', () => {
       const handler = createPlayerLauncherBootstrapHandler(() => ({ keyId: 'key-1', publicKey: {} }))
       const res = response()
       await handler(request(), res)
-      expect(res.body.loginApiUrl).toBe('https://auth.example.test/accounts/api/auth/login')
+      expect(res.body?.loginApiUrl).toBe('https://auth.example.test/accounts/api/auth/login')
     } finally {
       if (original === undefined) delete process.env.BOX_PLAYER_LOGIN_URL
       else process.env.BOX_PLAYER_LOGIN_URL = original

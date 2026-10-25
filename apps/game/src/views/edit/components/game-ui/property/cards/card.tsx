@@ -30,7 +30,7 @@ function PropertyCardView(props: Props) {
 
   const onMenuItemSelect = useCallback<MenuOptions['onItemSelect']>(
     (menuId) => {
-      menuOptions?.onItemSelect(menuId, tabType);
+      menuOptions?.onItemSelect(String(menuId), tabType);
     },
     [menuOptions, tabType],
   );

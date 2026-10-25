@@ -30,10 +30,11 @@ const integration = process.env.MODERATION_TEST_DATABASE_URL ? test : test.skip
 integration(
   'first owner initializes identity storage before group grants, offline renewals and permanent bans',
   async () => {
-    const { Pool } = await import('pg')
+    const pg = await import('pg')
+    const { Pool } = pg
     const ownedPools: InstanceType<typeof Pool>[] = []
-    const poolConstructor = jest.spyOn(require('pg'), 'Pool').mockImplementation((options) => {
-      const instance = new Pool(options)
+    const poolConstructor = jest.spyOn(pg, 'Pool').mockImplementation((options) => {
+      const instance = new pg.Pool(options)
       ownedPools.push(instance)
       return instance
     })

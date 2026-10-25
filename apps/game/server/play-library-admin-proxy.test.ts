@@ -7,7 +7,9 @@ jest.mock('./player-admin-route', () => ({
   playerAdminRoute: (_options: unknown, handler: (context: unknown) => unknown) =>
     (req: unknown, res: unknown) => handler({ req, res }),
 }))
-const { playLibraryAdminRoute } = jest.requireActual<typeof import('./play-library-admin-proxy')>('./play-library-admin-proxy')
+const { playLibraryAdminRoute } = jest.requireActual(
+  './play-library-admin-proxy',
+) as typeof import('./play-library-admin-proxy');
 
 describe('Play library administration section routing', () => {
   const originalFetch = globalThis.fetch

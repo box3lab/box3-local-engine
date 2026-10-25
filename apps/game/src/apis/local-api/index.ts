@@ -7,6 +7,48 @@ export interface PagedData<T> {
   rows: T[];
 }
 
+interface LocalCreatorModel {
+  modelId: number;
+  modelName: string;
+  modelPreviewUrl: string;
+  modelFileHash: string;
+  animated: boolean;
+  updatedAt: string;
+}
+
+interface RequestOptions {
+  timeout?: number;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function parseLocalCreatorModel(value: unknown): LocalCreatorModel {
+  if (!isRecord(value)) {
+    throw new Error('本地模型服务返回了无效模型');
+  }
+  const modelId =
+    typeof value.modelId === 'number'
+      ? value.modelId
+      : typeof value.modelId === 'string'
+        ? Number(value.modelId)
+        : NaN;
+  if (!Number.isFinite(modelId) || typeof value.modelName !== 'string') {
+    throw new Error('本地模型服务返回了无效模型');
+  }
+  return {
+    modelId,
+    modelName: value.modelName,
+    modelPreviewUrl:
+      typeof value.modelPreviewUrl === 'string' ? value.modelPreviewUrl : '',
+    modelFileHash:
+      typeof value.modelFileHash === 'string' ? value.modelFileHash : '',
+    animated: typeof value.animated === 'boolean' ? value.animated : false,
+    updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '',
+  };
+}
+
 function runtimeApi() {
   return new ApiClient({
     baseUrl: getConfig().BACKEND_SERVER_URL.replace(/\/$/, ''),
@@ -81,10 +123,18 @@ export const apis = {
     getModelDetailUsingGet(modelId: number | string, _params?: Record<string, unknown>) {
       return voxaApi().getApiLocalModelsId({ params: { path: { id: String(modelId) } } });
     },
-    copyProjectSharedModelUsingPost({ originModelId }: { originModelId: number | string }) {
-      return runtimeApi().postApiProjectModels({
+    async copyProjectSharedModelUsingPost({
+      originModelId,
+    }: {
+      originModelId: number | string;
+      mapId?: number;
+      event?: unknown;
+      sourceType?: unknown;
+    }): Promise<LocalCreatorModel> {
+      const result = await runtimeApi().postApiProjectModels({
         body: { action: 'importLocal', modelId: originModelId },
       });
+      return parseLocalCreatorModel(result);
     },
     async deleteModelUsingDelete(modelIds: Array<number | string>) {
       const results = await Promise.all(
@@ -94,36 +144,59 @@ export const apis = {
       );
       return results.every(Boolean);
     },
-    deleteProjectSharedModelUsingDelete({ modelId }: { modelId: number | string }) {
+    deleteProjectSharedModelUsingDelete({
+      modelId,
+    }: {
+      modelId: number | string;
+      mapId?: number;
+    }, _options?: RequestOptions) {
       return voxaApi().deleteApiLocalModelsId({ params: { path: { id: String(modelId) } } });
     },
     renameProjectSharedModelUsingPut({ modelId, modelName }: {
-      modelId: number | string; modelName: string;
-    }) {
+      modelId: number | string; modelName: string; mapId?: number;
+    }, _options?: RequestOptions) {
       return voxaApi().putApiLocalModelsId({
         params: { path: { id: String(modelId) } },
         body: { modelName },
       });
     },
-    setDefaultSkinUsingPut({ mapId, skinId }: { mapId: number; skinId: number }) {
+    setDefaultSkinUsingPut(
+      { mapId, skinId }: { mapId: number; skinId?: number },
+      _options?: RequestOptions,
+    ) {
       const projectKey = String(clientConfig.name || mapId);
       return voxaApi().putApiLocalDefaultSkin({
         params: { query: { projectKey, mapId: String(mapId) } },
         body: { projectKey, mapId, skinId },
       });
     },
-    async getDefaultSkinUsingGet({ mapId }: { mapId: number }) {
+    async getDefaultSkinUsingGet(
+      { mapId }: { mapId: number; mode?: string },
+      _options?: RequestOptions,
+    ): Promise<LocalCreatorModel | undefined> {
       const projectKey = String(clientConfig.name || mapId);
-      const skin = await voxaApi().getApiLocalDefaultSkin({
+      const result = await voxaApi().getApiLocalDefaultSkin({
         params: { query: { projectKey, mapId: String(mapId) } },
-      }) as Record<string, any> | undefined;
-      return skin ? { ...skin, modelPreviewUrl: absoluteVoxaURL(skin.modelPreviewUrl) } : undefined;
+      });
+      const skin = result == null ? undefined : parseLocalCreatorModel(result);
+      return skin
+        ? {
+            ...skin,
+            modelPreviewUrl: absoluteVoxaURL(skin.modelPreviewUrl) || '',
+          }
+        : undefined;
     },
-    async getSkinMapIdList() { return []; },
-    async batchAddSkinUsingPost() { return true; },
+    async getSkinMapIdList(_skinId?: number, _options?: RequestOptions) { return []; },
+    async batchAddSkinUsingPost(
+      _input?: Record<string, unknown>,
+      _options?: RequestOptions,
+    ) { return true; },
   },
   models: {
-    async getModelsUsingGetV2(query: Record<string, unknown>) {
+    async getModelsUsingGetV2(
+      query: Record<string, unknown>,
+      _options?: RequestOptions,
+    ): Promise<{ rows: LocalCreatorModel[] } & Record<string, unknown>> {
       const parameters = Object.fromEntries(
         Object.entries(query || {})
           .filter(([, value]) => value !== undefined && value !== null)
@@ -135,20 +208,28 @@ export const apis = {
         params: { query: parameters },
         credentials: 'same-origin',
         cache: 'no-store',
-      }) as { rows: Array<Record<string, any>> } & Record<string, any>;
+      });
+      if (!isRecord(result) || !Array.isArray(result.rows)) {
+        throw new Error('本地模型服务返回了无效模型列表');
+      }
+      const rows = result.rows.map(parseLocalCreatorModel);
       return {
         ...result,
-        rows: result.rows.map((model) => ({
-          ...model, modelPreviewUrl: absoluteVoxaURL(model.modelPreviewUrl),
+        rows: rows.map((model) => ({
+          ...model,
+          modelPreviewUrl: absoluteVoxaURL(model.modelPreviewUrl) || '',
         })),
       };
     },
-    deleteSharedSkinUsingDelete({ skinId }: { skinId: number | string }) {
+    deleteSharedSkinUsingDelete(
+      { skinId }: { skinId: number | string; mapId?: number },
+      _options?: RequestOptions,
+    ) {
       return voxaApi().deleteApiLocalModelsId({ params: { path: { id: String(skinId) } } });
     },
     renameSharedSkinUsingPut({ skinId, skinName }: {
-      skinId: number | string; skinName: string;
-    }) {
+      skinId: number | string; skinName: string; mapId?: number;
+    }, _options?: RequestOptions) {
       return voxaApi().putApiLocalModelsId({
         params: { path: { id: String(skinId) } },
         body: { modelName: skinName },
@@ -159,7 +240,11 @@ export const apis = {
     async roleListUsingGet(_input?: unknown) { return []; },
     async applyListUsingGet(_input?: unknown) { return []; },
     updateMapPrivacyUsingPut: unsupportedCollaboration,
-    async memberPermissionUsingGet(_input?: unknown) {
+    async memberPermissionUsingGet(_input?: unknown): Promise<{
+      admin: boolean;
+      owner: boolean;
+      collaboration?: { permissions: string[] };
+    }> {
       return { admin: true, owner: true, collaboration: undefined };
     },
     applyUsingPost: unsupportedCollaboration,

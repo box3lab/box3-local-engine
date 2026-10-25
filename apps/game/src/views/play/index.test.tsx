@@ -8,7 +8,7 @@ const effects: Array<() => void | (() => void)> = [];
 const dispose = jest.fn();
 const setPlayer = jest.fn();
 jest.mock('react', () => ({
-  ...jest.requireActual<typeof import('react')>('react'),
+  ...(jest.requireActual('react') as typeof import('react')),
   memo: (component: unknown) => component,
   useState: () => [undefined, setPlayer],
   useRef: (current: unknown) => ({current}),

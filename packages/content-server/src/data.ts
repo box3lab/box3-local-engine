@@ -13,6 +13,7 @@ export type DataRequest = {
 // connection slot and eventually report status 0. Keep the boxes retrieval
 // path unchanged for cloud URLs and bound only local runtime traffic.
 const LOCAL_RUNTIME_REQUEST_CONCURRENCY = 32;
+const LOCAL_RUNTIME_REQUEST_TIMEOUT = 31 * 60 * 1000;
 const localRuntimeRequests = new Semaphore(LOCAL_RUNTIME_REQUEST_CONCURRENCY);
 
 function isLocalRuntimeURL(url: string): boolean {
@@ -47,11 +48,14 @@ export async function retrieveData(
 
   for (let i = 0; i < count; i++) {
     const limitLocalRuntime = isLocalRuntimeURL(url);
+    const requestTimeout = limitLocalRuntime
+      ? Math.max(adjustedTimeout, LOCAL_RUNTIME_REQUEST_TIMEOUT)
+      : adjustedTimeout;
     if (limitLocalRuntime) {
       await localRuntimeRequests.p();
     }
     try {
-      return await retrieve(out, url, adjustedTimeout);
+      return await retrieve(out, url, requestTimeout);
     } catch (err) {
       if (i === count - 1) {
         return Promise.reject(err);

@@ -11,7 +11,7 @@ export default defineConfig({
     // handled by Next.js and return its 404 HTML page instead of CSS/JavaScript.
     base: '/',
     history: { type: 'hash' },
-    publicPath: './player-admin/',
+    publicPath: process.env.NODE_ENV === 'production' ? './player-admin/' : '/',
     proxy: {
         '/api': {
             target: process.env.PLAYER_ADMIN_DEV_API_URL || 'http://127.0.0.1:3124',

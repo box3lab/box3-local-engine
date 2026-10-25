@@ -19,7 +19,7 @@ export const Logo = React.memo(
         className={props.className}
         onClick={() => messenger.jumpTo({ url: link })}
       >
-        {!!clientConfig.customizeType ? (
+        {('customizeType' in clientConfig && clientConfig.customizeType) ? (
           <></>
         ) : (
           <Icon

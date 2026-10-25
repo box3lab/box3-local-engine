@@ -38,10 +38,10 @@ function usePrevious(value: string) {
   return ref.current;
 }
 
-export const SearchFC: React.RefForwardingComponent<SearchHandle, Props> = (
-  props,
-  ref,
-) => {
+function SearchFC(
+  props: Props,
+  ref: React.ForwardedRef<SearchHandle>,
+) {
   const {
     size,
     value: optionValue,
@@ -165,4 +165,4 @@ export const SearchFC: React.RefForwardingComponent<SearchHandle, Props> = (
   );
 };
 
-export const Search = forwardRef(SearchFC);
+export const Search = forwardRef<SearchHandle, Props>(SearchFC);

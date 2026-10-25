@@ -104,3 +104,4 @@ apps/manager-core/target/
 **/*.p12
 **/*.pfx
 /internals/dev-certs/certs/
+CHATGPT_CONTEXT.md

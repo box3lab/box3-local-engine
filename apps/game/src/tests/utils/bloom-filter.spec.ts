@@ -1,8 +1,8 @@
-import fs = require('fs');
-import path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 import { describe, expect, test } from '@jest/globals';
 import { BitArray } from '@box/build-system/utils/bitarray';
-import bloomFilter = require('@box/build-system/utils/bloom-filter');
+import * as bloomFilter from '@box/build-system/utils/bloom-filter';
 
 function randomString(len: number, seed: number) {
   let s = '';

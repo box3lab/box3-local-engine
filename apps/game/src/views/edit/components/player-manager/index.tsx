@@ -78,7 +78,7 @@ export async function fetchSkinData(query: {
       const item: PlayerSkin = {
         id: skin.modelId,
         name: skin.modelName,
-        previewUrl: skin.modelPreviewUrl,
+        previewUrl: skin.modelPreviewUrl || '',
       };
       skins.push(item);
     }
@@ -112,7 +112,7 @@ export const refreshSkinsList = async () => {
       skins.push({
         id: defaultSkin.modelId,
         name: defaultSkin.modelName,
-        previewUrl: defaultSkin.modelPreviewUrl,
+        previewUrl: defaultSkin.modelPreviewUrl || '',
       });
     }
   }

@@ -222,7 +222,21 @@ export function createGLTexture(
   result.data = req.image;
   result.width = imgModel.width;
   result.height = imgModel.height;
-  result.texture = regl.texture({ data: result.data });
+  let textureData: HTMLImageElement | HTMLCanvasElement;
+  if (result.data instanceof ImageBitmap) {
+    const canvas = document.createElement('canvas');
+    canvas.width = result.data.width;
+    canvas.height = result.data.height;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      throw new Error('Unable to create a 2D context for the model texture');
+    }
+    context.drawImage(result.data, 0, 0);
+    textureData = canvas;
+  } else {
+    textureData = result.data;
+  }
+  result.texture = regl.texture({ data: textureData });
   cache.imageIndex[hash] = result;
 }
 

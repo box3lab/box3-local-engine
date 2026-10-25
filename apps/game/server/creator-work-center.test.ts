@@ -54,6 +54,7 @@ describe('Creator work center model integration', () => {
         openEditor: noop,
         editDetails: noop,
         createSubmap: noop,
+        expandMap: noop,
         exportProject: noop,
         recoverProject: noop,
         deleteProject: noop,

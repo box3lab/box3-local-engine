@@ -33,10 +33,12 @@ class FileSystemContentServer {
         await fs_1.promises.mkdir(this.directory, { recursive: true });
     }
     async store(content) {
-        const hash = contentHash(content);
+        const snapshot = Buffer.from(content);
+        const hash = contentHash(snapshot);
         const target = path_1.default.join(this.directory, hash);
+        await fs_1.promises.mkdir(this.directory, { recursive: true });
         try {
-            await fs_1.promises.writeFile(target, content, { flag: 'wx' });
+            await fs_1.promises.writeFile(target, snapshot, { flag: 'wx' });
         }
         catch (error) {
             if (error.code !== 'EEXIST') {

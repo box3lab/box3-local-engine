@@ -83,7 +83,7 @@ const reasonSchema = z
   .trim()
   .max(500, '封禁原因不能超过 500 个字符');
 const permissionSchema = z.enum(
-  PLAYER_ADMIN_GRANTABLE_CAPABILITIES as [
+  [...PLAYER_ADMIN_GRANTABLE_CAPABILITIES] as [
     (typeof PLAYER_ADMIN_GRANTABLE_CAPABILITIES)[number],
     ...(typeof PLAYER_ADMIN_GRANTABLE_CAPABILITIES)[number][],
   ],
@@ -93,14 +93,14 @@ const permissionsSchema = z
   .max(PLAYER_ADMIN_GRANTABLE_CAPABILITIES.length)
   .transform((permissions) => [...new Set(permissions)]);
 const creatorPermissionsSchema = z
-  .array(z.enum(CREATOR_CAPABILITIES as [
+  .array(z.enum([...CREATOR_CAPABILITIES] as [
     (typeof CREATOR_CAPABILITIES)[number],
     ...(typeof CREATOR_CAPABILITIES)[number][],
   ]))
   .max(CREATOR_CAPABILITIES.length)
   .transform((permissions) => [...new Set(permissions)]);
 const creatorCliPermissionsSchema = z
-  .array(z.enum(CREATOR_CLI_CAPABILITIES as unknown as [
+  .array(z.enum([...CREATOR_CLI_CAPABILITIES] as [
     (typeof CREATOR_CLI_CAPABILITIES)[number],
     ...(typeof CREATOR_CLI_CAPABILITIES)[number][],
   ]))

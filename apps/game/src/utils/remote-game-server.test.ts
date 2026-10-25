@@ -2,7 +2,7 @@ import { resolveGameServerTarget } from './remote-game-server'
 
 describe('resolveGameServerTarget', () => {
   afterEach(() => {
-    delete (globalThis as typeof globalThis & { window?: unknown }).window
+    Reflect.deleteProperty(globalThis, 'window')
   })
 
   test('keeps session and socket remote while routing launcher map assets through same-origin SW URLs', () => {

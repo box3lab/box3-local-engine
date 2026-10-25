@@ -4,6 +4,7 @@ import { touchable } from 'src/utils/mobile';
 import style from './index.module.css';
 
 type Props = {
+  children?: React.ReactNode;
   title: string;
   onClose: () => void;
   fullHeight?: boolean;

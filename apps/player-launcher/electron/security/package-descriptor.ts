@@ -50,12 +50,12 @@ function decodeBase58(value:string):Buffer | null {
         }
         decoded = decoded * 58n + BigInt(digit);
     }
-    const bytes = [];
+    const bytes: number[] = [];
     while (decoded > 0n) {
         bytes.unshift(Number(decoded & 0xffn));
         decoded >>= 8n;
     }
-    const zeroPrefixLength = value.match(/^1*/)[0].length;
+    const zeroPrefixLength = value.match(/^1*/)?.[0].length ?? 0;
     const result = Buffer.concat([Buffer.alloc(zeroPrefixLength), Buffer.from(bytes)]);
     return result;
 }

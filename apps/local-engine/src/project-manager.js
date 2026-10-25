@@ -1107,6 +1107,32 @@ function createProject({ id, name, author = '', description = '', mapSize }) {
             // retain their existing portable project format.
             copyReadableDirectorySync(templateDataRoot, path.join(root, 'source'));
         }
+        const now = new Date().toISOString();
+        const themes = ['sunset', 'ocean', 'forest', 'violet'];
+        const metadata = {
+            formatVersion: 1,
+            id: safeId,
+            permanentMapId: createPermanentMapId(),
+            publicId: safeId,
+            name: name.trim(),
+            author: author.trim().slice(0, 80),
+            description: description.trim(),
+            theme: themes[listProjects().length % themes.length],
+            createdAt: now,
+            updatedAt: now,
+            releases: [],
+            mapGroupId: safeId,
+            mapRole: 'main',
+            mainProjectId: safeId,
+            // These values are consumed only when the first edit runtime creates its
+            // project state. Afterwards the voxel data in project-state.json is the
+            // authoritative editable map, exactly as it is for imported projects.
+            mapSize: normalizedMapSize,
+            templateId: 'blank',
+            terrainTheme: mapTemplatePresets.blank,
+        };
+        writeJSON(path.join(root, 'project.json'), metadata);
+        return toProjectSummary(metadata);
     } catch (error) {
         // A failed first attempt must not leave a project that blocks retrying the
         // same map ID. Cleanup is best-effort because Docker Desktop may briefly
@@ -1114,32 +1140,6 @@ function createProject({ id, name, author = '', description = '', mapSize }) {
         rollbackDirectory(root);
         throw error;
     }
-    const now = new Date().toISOString();
-    const themes = ['sunset', 'ocean', 'forest', 'violet'];
-    const metadata = {
-        formatVersion: 1,
-        id: safeId,
-        permanentMapId: createPermanentMapId(),
-        publicId: safeId,
-        name: name.trim(),
-        author: author.trim().slice(0, 80),
-        description: description.trim(),
-        theme: themes[listProjects().length % themes.length],
-        createdAt: now,
-        updatedAt: now,
-        releases: [],
-        mapGroupId: safeId,
-        mapRole: 'main',
-        mainProjectId: safeId,
-        // These values are consumed only when the first edit runtime creates its
-        // project state. Afterwards the voxel data in project-state.json is the
-        // authoritative editable map, exactly as it is for imported projects.
-        mapSize: normalizedMapSize,
-        templateId: 'blank',
-        terrainTheme: mapTemplatePresets.blank,
-    };
-    writeJSON(path.join(root, 'project.json'), metadata);
-    return toProjectSummary(metadata);
 }
 
 function projectStorageIdentity(id) {
@@ -1234,7 +1234,19 @@ function updateProject(id, patch) {
     return toProjectSummary(metadata);
 }
 
+function updateProjectMapSize(id, mapSize) {
+    const metadata = getProject(id);
+    metadata.mapSize = normalizeMapSize(mapSize);
+    metadata.updatedAt = new Date().toISOString();
+    writeJSON(path.join(projectRoot(id), 'project.json'), metadata);
+    return toProjectSummary(metadata);
+}
+
 function runTar(args, message) {
+    // On Windows, Git Bash GNU tar does not accept backslash paths such as
+    // C:\\Users\\... Convert them to forward-slash form (C:/Users/...) so the
+    // tar child process can open them.
+    args = args.map((a) => typeof a === 'string' ? a.replace(/^([A-Za-z]):[\/\\]/g, (_, d) => '/' + d.toLowerCase() + '/').replace(/\\/g, '/') : a);
     const result = spawnSync('tar', args, {
         encoding: 'utf8',
         // Keep ordinary tar failures readable without allowing the Node default
@@ -1249,7 +1261,6 @@ function runTar(args, message) {
     }
     return result.stdout;
 }
-
 function forEachFileLineSync(filePath, visit) {
     const descriptor = fs.openSync(filePath, 'r');
     const chunk = Buffer.allocUnsafe(64 * 1024);
@@ -1666,7 +1677,8 @@ function archiveEntriesAreSafe(archivePath) {
     let outputDescriptor;
     try {
         outputDescriptor = fs.openSync(entryListPath, 'wx');
-        const result = spawnSync('tar', ['-tzf', archivePath], {
+        const convPath = typeof archivePath === 'string' ? archivePath.replace(/^([A-Za-z]):[\/\\]/g, (_, d) => '/' + d.toLowerCase() + '/').replace(/\\/g, '/') : archivePath;
+        const result = spawnSync('tar', ['-tzf', convPath], {
             encoding: 'utf8',
             stdio: ['ignore', outputDescriptor, 'pipe'],
             maxBuffer: 16 * 1024 * 1024,
@@ -3035,6 +3047,7 @@ module.exports = {
     publishProject,
     publishMapGroup,
     updateProject,
+    updateProjectMapSize,
     updateProjectScript,
     readProjectScript,
     listProjectSharedScripts,

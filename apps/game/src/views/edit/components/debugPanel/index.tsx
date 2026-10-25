@@ -185,7 +185,8 @@ class DebugContainer extends React.Component<Props, State> {
             } else if (log.message.type === 'evalResult') {
               return (
                 <div key={log.id} className={className}>
-                  <i>&lt;~</i> {data}
+                  <i>&lt;~</i>{' '}
+                  {typeof data === 'string' ? data : JSON.stringify(data)}
                 </div>
               );
             } else {

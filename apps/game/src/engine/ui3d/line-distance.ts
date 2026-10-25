@@ -1,18 +1,19 @@
 import { vec3 } from 'gl-matrix';
+import { toVec3 } from '../utils/vec3';
 
 //http://geomalgorithms.com/a07-_distance.html
 
 const EPSILON = 1e-6;
 
 export type Line = {
-  origin:vec3|number[],
-  dir:vec3|number[],
+  origin: ArrayLike<number>,
+  dir: ArrayLike<number>,
 };
 
 export function distanceLineToLine(L1:Line, L2:Line) {
-  const u = L1.dir;
-  const v = L2.dir;
-  const w = vec3.sub(vec3.create(), L1.origin, L2.origin);
+  const u = toVec3(L1.dir);
+  const v = toVec3(L2.dir);
+  const w = vec3.sub(vec3.create(), toVec3(L1.origin), toVec3(L2.origin));
   const a = vec3.dot(u, u);
   const b = vec3.dot(u, v);
   const c = vec3.dot(v, v);
@@ -41,17 +42,21 @@ export function distanceLineToLine(L1:Line, L2:Line) {
 }
 
 export type Segment = {
-  start:vec3|number[],
-  end:vec3|number[],
+  start: ArrayLike<number>,
+  end: ArrayLike<number>,
 };
 
 export function distanceSegmentToSegment(S1:Segment, S2:Segment) {
-  const u = vec3.sub(vec3.create(), S1.end, S1.start);
+  const start1 = toVec3(S1.start);
+  const end1 = toVec3(S1.end);
+  const start2 = toVec3(S2.start);
+  const end2 = toVec3(S2.end);
+  const u = vec3.sub(vec3.create(), end1, start1);
   // vec3.normalize(u, u);
-  const v = vec3.sub(vec3.create(), S2.end, S2.start);
+  const v = vec3.sub(vec3.create(), end2, start2);
   // vec3.normalize(v, v);
 
-  const w = vec3.sub(vec3.create(), S1.start, S2.start);
+  const w = vec3.sub(vec3.create(), start1, start2);
   const a = vec3.dot(u, u);
   const b = vec3.dot(u, v);
   const c = vec3.dot(v, v);
@@ -126,10 +131,12 @@ export function distanceSegmentToSegment(S1:Segment, S2:Segment) {
 }
 
 export function distanceLineToSegment(L:Line, S:Segment) {
-  const u = L.dir;
-  const v = vec3.sub(vec3.create(), S.end, S.start);
+  const u = toVec3(L.dir);
+  const start = toVec3(S.start);
+  const end = toVec3(S.end);
+  const v = vec3.sub(vec3.create(), end, start);
   // vec3.normalize(v, v);
-  const w = vec3.sub(vec3.create(), L.origin, S.start);
+  const w = vec3.sub(vec3.create(), toVec3(L.origin), start);
   const a = vec3.dot(u, u);
   const b = vec3.dot(u, v);
   const c = vec3.dot(v, v);

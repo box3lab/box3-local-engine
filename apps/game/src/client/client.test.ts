@@ -12,7 +12,9 @@ jest.mock('../utils/performance-test', () => ({DISPOSED_WEAK_SET:new WeakSet()})
 jest.mock('../utils/token', () => ({getToken:jest.fn(),setToken:jest.fn()}));
 jest.mock('./client-schema', () => ({getMuRef:jest.fn()}));
 
-afterEach(() => jest.useRealTimers());
+afterEach(() => {
+  jest.useRealTimers();
+});
 test('engine disposal releases its game and stops recurring work exactly once', () => {
   jest.useFakeTimers();
   const poll = jest.fn();

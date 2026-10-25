@@ -18,6 +18,14 @@ const projectApiSource = fs.readFileSync(
   path.resolve(__dirname, '../pages/api/local-projects/[id].ts'),
   'utf8',
 );
+const projectPageSource = fs.readFileSync(
+  path.resolve(__dirname, '../pages/projects/index.tsx'),
+  'utf8',
+);
+const expandApiSource = fs.readFileSync(
+  path.resolve(__dirname, '../pages/api/local-projects/[id]/expand.ts'),
+  'utf8',
+);
 const projectManagerSource = fs.readFileSync(
   path.resolve(__dirname, '../../local-engine/src/project-manager.js'),
   'utf8',
@@ -72,6 +80,20 @@ function renderDetails() {
 }
 
 describe('creator project editor dialog', () => {
+  test('keeps map expansion waits longer than the managed runtime startup window', () => {
+    expect(projectPageSource).toContain(
+      'Date.now() + LOCAL_RUNTIME_OPERATION_TIMEOUT_MS',
+    );
+    expect(expandApiSource).toContain(
+      'AbortSignal.timeout(LOCAL_RUNTIME_OPERATION_TIMEOUT_MS)',
+    );
+  });
+
+  test('stops edit and play runtimes before deleting a map', () => {
+    expect(projectApiSource).toContain('await stopLocalProjectRuntimes');
+    expect(projectApiSource).toContain('manager.listMapGroup(id)');
+  });
+
   test('keeps modal backdrops above the fixed creator footer', () => {
     const backdropZIndex = Number(
       styleSource.match(/\.dialogBackdrop\s*\{[^}]*z-index:\s*(\d+);/s)?.[1],

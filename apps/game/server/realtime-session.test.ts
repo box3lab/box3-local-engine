@@ -13,6 +13,13 @@ const { consumeRealtimeTicket } = require('./realtime-tickets');
 const { isInternalIdentityRequest, listPlayerRevocations } = require('./local-player-identity');
 const { playerChangeFeed } = require('./player-change-feed');
 const { resolvePlayerAdminSession } = require('./player-admin-identity');
+type MockLike = {
+  mock: {
+    calls: unknown[][];
+  };
+  mockReturnValue: (value: unknown) => void;
+  mockResolvedValue: (value: unknown) => void;
+};
 const flush = async () => { for (let i = 0; i < 20; i++) await Promise.resolve(); };
 function response() {
   const res: any = { code: 200, body: undefined, setHeader() {}, status(code: number) { this.code = code; return this; }, json(body: any) { this.body = body; return this; }, end() { return this; } };
@@ -30,21 +37,21 @@ test('admin grants require CSRF and filter topics without disclosing player data
   expect(resolvePlayerAdminSession).toHaveBeenCalledWith(expect.anything(), { requireCsrf: true });
   const messages: any[] = [];
   const binding = consumeRealtimeTicket(res.body.ticket, 'engine.test')(value => messages.push(value));
-  const callback = (playerChangeFeed.subscribe as jest.Mock).mock.calls[0][0] as (name: string) => void;
+  const callback = (playerChangeFeed.subscribe as MockLike).mock.calls[0][0] as (name: string) => void;
   callback('users'); callback('identity_bans'); callback('script_admin_keys'); callback('admin_accounts');
   expect(messages).toEqual([{ type: 'change', topic: 'players' }, { type: 'reauthenticate' }]); binding.close();
 });
 test('revocation replay recovers late lower ids and deduplicates delivery', async () => {
-  (isInternalIdentityRequest as jest.Mock).mockReturnValue(true);
+  (isInternalIdentityRequest as MockLike).mockReturnValue(true);
   const res = response(); await handler(request({ kind: 'revocations', after: '41', since: new Date(Date.now() - 300_000).toISOString() }), res);
   expect(res.code).toBe(200);
   const messages: any[] = [];
   const binding = consumeRealtimeTicket(res.body.ticket, 'internal')(value => messages.push(value));
   await flush();
-  const callback = (playerChangeFeed.subscribe as jest.Mock).mock.calls[0][0] as (name: string) => void;
-  (listPlayerRevocations as jest.Mock).mockResolvedValue({ cursor: '40', events: [{ id: '40', subjectId: 'player-a', reason: 'banned', createdAt: new Date().toISOString() }] } as never);
+  const callback = (playerChangeFeed.subscribe as MockLike).mock.calls[0][0] as (name: string) => void;
+  (listPlayerRevocations as MockLike).mockResolvedValue({ cursor: '40', events: [{ id: '40', subjectId: 'player-a', reason: 'banned', createdAt: new Date().toISOString() }] } as never);
   callback('player_revocations'); await flush(); callback('player_revocations'); await flush();
-  expect((listPlayerRevocations as jest.Mock).mock.calls.every(args => args[0] === 0)).toBe(true);
+  expect((listPlayerRevocations as MockLike).mock.calls.every(args => args[0] === 0)).toBe(true);
   expect(messages.filter(e => e.type === 'revocations')).toEqual([{ type: 'revocations', cursor: '41', events: [expect.objectContaining({ id: '40' })] }]);
   binding.close();
 });

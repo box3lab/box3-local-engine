@@ -52,10 +52,10 @@ export class IvmpScriptSocketServer implements ScriptServer {
 
   private createChildProcess() {
     const childProcess = fork(
-      join(__dirname, './ivmp-process-entry'),
+      join(__dirname, './ivmp-process-entry.ts'),
       undefined,
       {
-        execArgv: scriptWorkerExecArgv(join(__dirname, './ivmp-process-entry')),
+        execArgv: scriptWorkerExecArgv(join(__dirname, './ivmp-process-entry.ts')),
         stdio: 'inherit',
         serialization: 'advanced',
         env: Object.assign({}, process.env, {

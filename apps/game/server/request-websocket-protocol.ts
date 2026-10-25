@@ -1,5 +1,5 @@
 type Request = {
-  headers: { 'x-forwarded-proto'?: string | string[] };
+  headers: Record<string, string | string[] | undefined>;
   socket: object;
 };
 
